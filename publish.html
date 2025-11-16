@@ -35,23 +35,23 @@
         </div>
         <div class="field-group">
             <label>Display name of API in portal:</label>
-            <input type="text">
+            <input type="text" class="apiDisplayName">
         </div>
         <div class="field-group">
             <label>Short description:</label>
-            <textarea></textarea>
+            <textarea class="apiDescription"></textarea>
         </div>
         <div class="field-group">
             <label>API Product description:</label>
-            <textarea></textarea>
+            <textarea class="apiProductDescription"></textarea>
         </div>
         <div class="field-group">
             <label>API Product features:</label>
-            <textarea></textarea>
+            <textarea class="apiProductFeatures"></textarea>
         </div>
         <div class="field-group">
             <label>Category falls under:</label>
-            <select>
+            <select class="category">
                 <option value="">Select Category</option>
                 <option>Building Blocks</option>
                 <option>Outbound</option>
@@ -63,46 +63,43 @@
         </div>
             <div class="field-group">
             <label>Workflow:</label>
-            <input type="file" id="WorkflowImage" accept="image/*" onchange="previewWorkflowImage()">
+            <input type="file" class="workFlow" id="WorkflowImage" accept="image/*" onchange="previewWorkflowImage()">
             <img id="workflowPreview" style="margin-top:10px; max-width: 200px; display:none; border: 1px solid #ccc; padding: 5px;">
         </div>
         <div class="field-group">
             <label>Use Cases:</label>
-            <textarea></textarea>
+            <textarea class="useCases"></textarea>
         </div>
         <div class="field-group">
             <label>API Product Name:</label>
-            <input type="text">
+            <input type="text" class="apiProductName">
         </div>
         <div class="field-group">
             <label>Change Ticket ID:</label>
-            <input type="text">
+            <input type="text" class="changeId">
         </div>
-        <div class="field-group">
-            <label>Data Classification:</label>
-            <textarea></textarea>
-        </div>
-        <div class="field-group">
-            <label>Data Classification Details:</label>
-            <textarea></textarea>
-        </div>
+     
         <div class="field-group">
             <label>Data Classifications:</label>
-            <select>
+            <select class="dataClassifications">
                 <option value="">Select Classification</option>
                 <option>Transaction Specific</option>
                 <option>Sensitive Information</option>
                 <option>Personal Identifiable</option>
             </select>
         </div>
+           <div class="field-group">
+            <label>Data Classification Details:</label>
+            <textarea class="dataClassificationDtls"></textarea>
+        </div>
             <div class="field-group">
             <label>Description:</label>
-            <input type="text">
+            <input type="text" class="desc">
         </div>
    
         <div class="field-group">
             <label>Exception Taken:</label>
-            <select>
+            <select class="exceptionTaken">
                <option value=""disabled selected>Select</option>
                <option>Yes</option>
                <option>No</option>
@@ -111,7 +108,7 @@
 
              <div class="field-group">
             <label>Exception Reason:</label>
-            <textarea></textarea>
+            <textarea class="exceptionReason"></textarea>
         </div>
         <div class="field-group">
             <label>GAS ID:</label>
@@ -124,7 +121,7 @@
 
         <div class="field-group">
             <label for="apiOffering">API Offering:</label>
-            <select id="apiOffering">
+            <select id="apiOffering" class="apiOffering">
                 <option value=""disabled selected>Select API Offering</option>
                 <option>System API</option>
                 <option>Process API</option>
@@ -134,11 +131,12 @@
 
         <div class="field-group">
             <label for ="middleware">Middleware:</label>
-          <select id="middleware">
+          <select id="middleware" class="middleware">
         <option value=""disabled selected>Select Middleware</option>
         <option>OBP</option>
         <option>SOA</option>
         <option>OBRH</option>
+        <option>NA</option>
           </select>
         </div>
 
@@ -193,7 +191,7 @@
 
         <div class="field-group">
             <label for="riskClassification">API Risk Classification</label>
-            <select id="riskClassification">
+            <select class="riskClassification">
                 <option value=""disbaled selected></option>
                 <option>Low</option>
                 <option>Medium</option>
@@ -203,7 +201,7 @@
 
         <div class="field-group">
             <label for="riskScore">Risk Score</label>
-            <input type="number">
+            <input type="number" class="riskScore" oninput="updateRiskClassification(this)">
         </div>
 
      
@@ -232,17 +230,28 @@ function addCard() {
 }
 
 function deleteCard(btn) {
+
+    const formContainer=document.getElementById("formContainer");
+    const cards=formContainer.querySelectorAll(".card");
+
+    if(cards.length==1)
+{
+    alert("At least one API Entry must remain !!");
+    return;
+}
+
+
     const card = btn.closest(".card");
     card.remove();
 }
 
-function isCamelCase(str) {
-    return /^[a-z]+([A-Z][a-z0-9]+)*$/.test(str);
+function isMachineName(str) {
+    return /^[a-z]+(-[a-zA-Z]+)*(-v[0-9]+)?$/.test(str);
 }
 
 function validateCard(card) {
     const apiMachineName = card.querySelector(".apiMachineName").value.trim();
-    if(!isCamelCase(apiMachineName)) {
+    if(!isMachineName(apiMachineName)) {
         alert("API MachineName should be in camelCase");
         return false;
     }
@@ -279,18 +288,67 @@ function previewWorkflowImage() {
     reader.readAsDataURL(file);
 }
 
+function updateRiskClassification(scoreInput) {
+    const card = scoreInput.closest('.card'); // find the card this input belongs to
+    const classificationSelect = card.querySelector('.riskClassification');
+    const score = parseFloat(scoreInput.value);
+
+    if (isNaN(score)) {
+        classificationSelect.value = "";
+        return;
+    }
+
+    if (score >= 0 && score <= 40) {
+        classificationSelect.value = "Low";
+    } else if (score > 40 && score <= 65) {
+        classificationSelect.value = "Medium";
+    } else if (score > 65) {
+        classificationSelect.value = "High";
+    } else {
+        classificationSelect.value = "";
+    }
+}
+
+
 function downloadExcel() {
     const cards = document.querySelectorAll(".card");
     const wb = XLSX.utils.book_new();
     const wsData = [];
 
-    // Header row
-    wsData.push([
-        "API Display Name","API MachineName","API Description","Product Description","Product Features",
-        "Category","Use Cases","API Product Name","Change Ticket","Data Description",
-        "Data Elements","Data Classifications","Exception Taken","Exception Reason","GAS","JIRA","API Severity",
-        "UAT OnBoard Date","Prod Onboard Date"
-    ]);
+  //Header Row
+
+  // Header row
+wsData.push([
+    "API Name on Gateway",      // .apiMachineName
+    "Display Name",             // .apiDisplayName
+    "Short Description",        // .apiDescription
+    "API Product Description",  // .apiProductDescription
+    "API Product Features",     // .apiProductFeatures
+    "Category",                 // .category
+    "Workflow File",            // .workflow
+    "Use Cases",                // .useCases
+    "API Product Name",         // .apiProductName
+    "Change Ticket ID",         // .changeId
+    "Data Classification",      // .dataClassifications
+    "Data Classification Details", // .dataClassificationDtls
+    "Description",              // .desc
+    "Exception Taken",          // .exceptionTaken
+    "Exception Reason",         // .exceptionReason
+    "GAS ID",                   // .gasInput
+    "JIRA ID",                  // .jiraInput
+    "API Offering",             // .apiOffering
+    "Middleware",               // .middleware
+    "Orchestrated / Pass Through", // .orchestratedPassthrough
+    "API Reusability",          // .apiReusability
+    "Producer",                 // .producer
+    "Producer End Point",       // .producerUrl
+    "Security Test Status",     // .appsecTesting
+    "Hosting Date UAT",         // .hostingDateUAT
+    "Hosting Date PROD",        // .hostingDateProd
+    "API Risk Classification",  // .riskClassification
+    "Risk Score"                // .riskScore
+]);
+
 
     for(const card of cards) {
         if(!validateCard(card)) return; // Stop if validation fails
