@@ -196,6 +196,7 @@
                 <option>Low</option>
                 <option>Medium</option>
                 <option>High</option>
+                <option>Outbound</option>
             </select>
         </div>
 
@@ -220,13 +221,18 @@
 <script>
 let entryCount = 1;
 
+document.querySelectorAll(".card").forEach(card => setupCategoryBehavior(card));
+
 function addCard() {
     entryCount++;
     const formContainer = document.getElementById("formContainer");
+    const templateCard=document.querySelector(".card");
     const card = document.createElement("div");
     card.classList.add("card");
-    card.innerHTML = document.querySelector(".card").innerHTML.replace(/API Entry 1/g, `API Entry ${entryCount}`);
+    card.innerHTML = templateCard.innerHTML.replace(/API Entry 1/g, `API Entry ${entryCount}`);
     formContainer.appendChild(card);
+
+setupCategoryBehavior(card);
 }
 
 function deleteCard(btn) {
@@ -260,6 +266,9 @@ function validateCard(card) {
         alert("JIRA must start with APIGATE");
         return false;
     }
+
+
+
     const selects = card.querySelectorAll("select");
     for(let sel of selects){
         if(sel.value === "") {
@@ -308,6 +317,41 @@ function updateRiskClassification(scoreInput) {
         classificationSelect.value = "";
     }
 }
+
+function setupCategoryBehavior(card)
+{
+    const category=card.querySelector(".category");
+    const gasInput=card.querySelector(".gasInput");
+
+
+    const riskScore=card.querySelector(".riskScore");
+    const riskClassification=card.querySelector(".riskClassification");
+
+
+    category.addEventListener("change",function(){
+
+        if(this.value=="Outbound")
+    {
+        gasInput.value="NA/Outbound";
+
+        riskScore.value="";
+        riskScore.disabled=true;
+        riskClassification.value="Outbound";
+        riskClassification.disabled=true;
+        gasInput.disabled=true;
+
+    }
+        else
+    {
+        gasInput.value="";
+        riskClassification.value="";
+        riskClassification.disabled=false;
+        riskScore.disabled=false;
+    }
+});
+
+}
+        
 
 
 function downloadExcel() {
